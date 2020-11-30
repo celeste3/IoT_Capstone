@@ -18,12 +18,17 @@ void loop();
 byte gyro_zout_h, gyro_zout_l; //variables to store the individual btyes
 int16_t gyro_z;
 float gyro_z_g;
+byte gyro_xout_h, gyro_xout_l;
+int16_t gyro_x;
+byte gyro_yout_h, gyro_yout_l;
+int16_t gyro_y; 
+
 
 const int MPU_ADDR = 0X68;
 
 void setup() {
   Serial.begin(9600);
-  delay(2000);
+  delay(1000);
 
   //Begin 12C communications
   Wire.begin();
@@ -50,6 +55,27 @@ void loop() {
   gyro_zout_h = Wire.read(); 
   gyro_zout_l = Wire.read();
 
+  //BIT SHIFT CODE
+  gyro_z = gyro_zout_h << 8 | gyro_zout_l;
+
   Serial.printf("Z Gyro rotation is %i \n", gyro_z);
+
+  Wire.requestFrom(MPU_ADDR, 2, true);
+  gyro_xout_h = Wire.read();
+  gyro_xout_l = Wire.read();
+
+  //BIT SHIFT CODE
+  gyro_x = gyro_xout_h << 8 | gyro_zout_l;
+
+  Serial.printf("X Gyro rotation is %i \n", gyro_x);
+
+  Wire.requestFrom(MPU_ADDR, 2, true);
+  gyro_yout_h = Wire.read();
+  gyro_yout_l = Wire.read();
+
+  //BIT SHIFT CODE
+  gyro_y = gyro_xout_h << 8 | gyro_yout_l;
+
+  Serial.printf("Y Gyro rotation is %i \n", gyro_y);
 
 }
