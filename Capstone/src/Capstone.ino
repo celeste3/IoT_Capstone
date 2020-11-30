@@ -50,6 +50,11 @@ void loop() {
   gyro_z = gyro_zout_h << 8 | gyro_zout_l;
 
   Serial.printf("Z Gyro rotation is %i \n", gyro_z);
+ 
+  //NOT SURE ABOUT THIS CODE
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(0x43); // Starting with register 0x72
+  Wire.endTransmission(false); // Keep active.
 
   Wire.requestFrom(MPU_ADDR, 2, true);
   gyro_xout_h = Wire.read();
@@ -59,6 +64,11 @@ void loop() {
   gyro_x = gyro_xout_h << 8 | gyro_zout_l;
 
   Serial.printf("X Gyro rotation is %i \n", gyro_x);
+
+ //NOT SURE ABOUT THIS CODE
+  Wire.beginTransmission(MPU_ADDR);
+  Wire.write(0x45); // Starting with register 0x72
+  Wire.endTransmission(false); // Keep active.
 
   Wire.requestFrom(MPU_ADDR, 2, true);
   gyro_yout_h = Wire.read();
