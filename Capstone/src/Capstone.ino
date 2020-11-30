@@ -14,7 +14,6 @@ int16_t gyro_x;
 byte gyro_yout_h, gyro_yout_l;
 int16_t gyro_y; 
 
-
 const int MPU_ADDR = 0X68;
 
 void setup() {
@@ -50,8 +49,7 @@ void loop() {
   gyro_z = gyro_zout_h << 8 | gyro_zout_l;
 
   Serial.printf("Z Gyro rotation is %i \n", gyro_z);
- 
-  //NOT SURE ABOUT THIS CODE
+
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x43); // Starting with register 0x72
   Wire.endTransmission(false); // Keep active.
@@ -65,7 +63,6 @@ void loop() {
 
   Serial.printf("X Gyro rotation is %i \n", gyro_x);
 
- //NOT SURE ABOUT THIS CODE
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x45); // Starting with register 0x72
   Wire.endTransmission(false); // Keep active.
