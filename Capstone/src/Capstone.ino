@@ -59,7 +59,7 @@ void loop() {
   gyro_xout_l = Wire.read();
 
   //BIT SHIFT CODE
-  // gyro_x = gyro_xout_h << 8 | gyro_zout_l;
+  gyro_x = gyro_xout_h << 8 | gyro_xout_l;
 
   Serial.printf("X Gyro rotation is %i \n", gyro_x);
 
@@ -72,7 +72,7 @@ void loop() {
   gyro_yout_l = Wire.read();
 
   //BIT SHIFT CODE
-  // gyro_y = gyro_xout_h << 8 | gyro_yout_l;
+  gyro_y = gyro_yout_h << 8 | gyro_yout_l;
 
   Serial.printf("Y Gyro rotation is %i \n", gyro_y);
 
