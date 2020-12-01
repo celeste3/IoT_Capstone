@@ -5,14 +5,16 @@
  * Date: November 30, 2020
  */
 
-//Declared Variables
-byte gyro_zout_h, gyro_zout_l; //variables to store the individual btyes
-int16_t gyro_z;
-float gyro_z_g;
+#include <I2Cdev.h>
+
+//Declared Variablesp
 byte gyro_xout_h, gyro_xout_l;
-int16_t gyro_x;
 byte gyro_yout_h, gyro_yout_l;
-int16_t gyro_y; 
+byte gyro_zout_h, gyro_zout_l; //variables to store the individual btyes
+int16_t gyro_x, gyro_y, gyro_z;
+float gyro_x_g;
+float gyro_y_g;
+float gyro_z_g;
 
 const int MPU_ADDR = 0X68;
 
@@ -36,12 +38,12 @@ void setup() {
 }
 
 void loop() {
-
+  delay(2000);
   Wire.beginTransmission(MPU_ADDR);
   Wire.write(0x47); // Starting with register 0x72
   Wire.endTransmission(false); // Keep active.
 
-  Wire.requestFrom(MPU_ADDR, 2, true);
+  Wire.requestFrom(MPU_ADDR,2,true);
   gyro_zout_h = Wire.read(); 
   gyro_zout_l = Wire.read();
 
@@ -54,7 +56,7 @@ void loop() {
   Wire.write(0x43); // Starting with register 0x72
   Wire.endTransmission(false); // Keep active.
 
-  Wire.requestFrom(MPU_ADDR, 2, true);
+  Wire.requestFrom(MPU_ADDR,2,true);
   gyro_xout_h = Wire.read();
   gyro_xout_l = Wire.read();
 
@@ -67,7 +69,7 @@ void loop() {
   Wire.write(0x45); // Starting with register 0x72
   Wire.endTransmission(false); // Keep active.
 
-  Wire.requestFrom(MPU_ADDR, 2, true);
+  Wire.requestFrom(MPU_ADDR,2,true);
   gyro_yout_h = Wire.read();
   gyro_yout_l = Wire.read();
 
