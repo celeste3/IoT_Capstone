@@ -11,16 +11,16 @@
  * Date: November 30, 2020
  */
 
-#include <I2Cdev.h>
-
 //Declared Variablesp
 void setup();
 void loop();
-#line 11 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
+#line 9 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
 byte gyro_xout_h, gyro_xout_l;
 byte gyro_yout_h, gyro_yout_l;
 byte gyro_zout_h, gyro_zout_l; //variables to store the individual btyes
-int16_t gyro_x, gyro_y, gyro_z;
+int16_t gyro_x; 
+int16_t gyro_y; 
+int16_t gyro_z;
 float gyro_x_g;
 float gyro_y_g;
 float gyro_z_g;
