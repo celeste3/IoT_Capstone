@@ -9,9 +9,7 @@
 byte gyro_xout_h, gyro_xout_l;
 byte gyro_yout_h, gyro_yout_l;
 byte gyro_zout_h, gyro_zout_l; //variables to store the individual btyes
-int16_t gyro_x; 
-int16_t gyro_y; 
-int16_t gyro_z;
+int16_t gyro_x, gyro_y, gyro_z;
 float gyro_x_g;
 float gyro_y_g;
 float gyro_z_g;
@@ -61,7 +59,7 @@ void loop() {
   gyro_xout_l = Wire.read();
 
   //BIT SHIFT CODE
-  gyro_x = gyro_xout_h << 8 | gyro_zout_l;
+  // gyro_x = gyro_xout_h << 8 | gyro_zout_l;
 
   Serial.printf("X Gyro rotation is %i \n", gyro_x);
 
@@ -74,7 +72,7 @@ void loop() {
   gyro_yout_l = Wire.read();
 
   //BIT SHIFT CODE
-  gyro_y = gyro_xout_h << 8 | gyro_yout_l;
+  // gyro_y = gyro_xout_h << 8 | gyro_yout_l;
 
   Serial.printf("Y Gyro rotation is %i \n", gyro_y);
 
