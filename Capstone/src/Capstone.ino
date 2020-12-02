@@ -5,7 +5,24 @@
  * Date: November 30, 2020
  */
 
+#include "credentials.h"
+
+#include <Adafruit_MQTT.h>
+
 #include <math.h>
+
+/************ Global State (you don't need to change this!) ***   ***************/ 
+// TCPClient TheClient; 
+
+// Setup the MQTT client class by passing in the WiFi client and MQTT server and login details. 
+// Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_KEY); 
+
+/****************************** Feeds ***************************************/ 
+// Setup Feeds to publish or subscribe 
+// Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname> 
+// Adafruit_MQTT_Subscribe buttonOnOf = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/buttonOnOf"); 
+// Adafruit_MQTT_Publish randomPub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/randomPub");
+
 
 //Declared Variables for gyro
 byte accel_xout_h, accel_xout_l;
@@ -15,19 +32,30 @@ int16_t accel_xout, accel_yout, accel_zout;
 float accel_x_g, accel_y_g, accel_z_g;
 float accelTotal;
 
+const int threshold = 1.2;
+int setAlarm = 0;
+
 //Declared Variables for Hall sensor
 const int hallPin = D16;
-int hallVal;
-bool alarmState;
+bool hallVal;
+bool hallState;
+bool alarmState = true;
 
 const int ledPin = A5;
 
 const int MPU_ADDR = 0X68;
 
+SYSTEM_MODE(SEMI_AUTOMATIC); //Uncomment if using wifi
+
 void setup() {
   Serial.begin(9600);
   delay(1000);
-  pinMode(ledPin ,OUTPUT);
+  
+  // // Setup MQTT subscription for onoff feed.
+  // //mqtt.subscribe(&TempF);
+  // mqtt.subscribe(&buttonOnOf);
+
+  pinMode(ledPin, OUTPUT);
   pinMode(hallPin, INPUT);
 
   //Begin 12C communications
@@ -46,23 +74,33 @@ void setup() {
 }
 
 void loop() {
-  hallVal = digitalRead(hallPin);
-  Serial.printf("hallPin %i\n", hallVal);
+    // MQTT_connect();
+    getAccel();
+    getHallState();
 
-  if(alarmState == TRUE) {
-    alarm();
+  if(alarmState) {
+    hallVal = 0; //This is temp
+    Serial.printf("hallVal %i, accellTotal %f \n", hallVal, accelTotal);
+   if(accelTotal > threshold || hallVal == true) {
+    alarmIsOn();
+   }
+   else {
+     alarmIsOff();
+   }
   }
   else {
-    digitalWrite(ledPin,LOW);
+     alarmIsOff();
   }
-
-  delay(5000);
-  getAccel();
 }
+
+// void MQTT_connect() {
+      // int8 
+    
+// }
 
 void getAccel() {
  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3B);  // Starting with register 0x3F
+  Wire.write(0x3B);  // Starting with register 0x3B
   Wire.endTransmission(false);  // Keep active.
 
   Wire.requestFrom(MPU_ADDR,6,true);
@@ -85,10 +123,6 @@ void getAccel() {
   accel_zout = accel_zout_h << 8 | accel_zout_l;
   accel_z_g = accel_zout / -17272.0; 
 
-  // Serial.printf("X acceleration: %i \n", accel_xout);
-  // Serial.printf("Y acceleration: %i \n", accel_yout);
-  // Serial.printf("Z acceleration: %i \n", accel_zout);
-
   Serial.printf("X acceleration: %f \n", accel_x_g);
   Serial.printf("Y acceleration: %f \n", accel_y_g);
   Serial.printf("Z acceleration: %f \n", accel_z_g);
@@ -97,14 +131,19 @@ void getAccel() {
   Serial.printf("Accel Total: %f\n", accelTotal);
 }
 
-void alarm() {
-  if (hallVal == 0) {
-    digitalWrite(ledPin,LOW);
-  }
-  else {
+void getHallState() {
+ hallVal = digitalRead(hallPin);
+}
+
+void alarmIsOn() {
+    Serial.printf("Alarm is on \n");
     digitalWrite(ledPin, HIGH);
+    delay(100);
     digitalWrite(ledPin,LOW);
-    digitalWrite(ledPin,HIGH);
-    digitalWrite(ledPin,LOW);
+    delay(100);
   }
+
+void alarmIsOff() {
+ digitalWrite(ledPin,LOW);
+ delay(500);
 }
