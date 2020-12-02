@@ -8,12 +8,12 @@
 #include <math.h>
 
 //Declared Variables for gyro
-byte accel_x_h, accel_x_l;
-byte accel_y_h, accel_y_l;
-byte accel_z_h, accel_z_l; //variables to store the individual btyes
-int16_t accel_x, accel_y, accel_z;
+byte accel_xout_h, accel_xout_l;
+byte accel_yout_h, accel_yout_l;
+byte accel_zout_h, accel_zout_l; //variables to store the individual btyes
+int16_t accel_xout, accel_yout, accel_zout;
 float accel_x_g, accel_y_g, accel_z_g;
-int gyroTotal;
+int accelTotal;
 
 //Declared Variables for Hall sensor
 const int hallPin = D16;
@@ -27,6 +27,7 @@ const int MPU_ADDR = 0X68;
 void setup() {
   Serial.begin(9600);
   delay(1000);
+  pinMode(ledPin ,OUTPUT);
   pinMode(hallPin, INPUT);
 
   //Begin 12C communications
@@ -63,46 +64,32 @@ void loop() {
 
 void getAccel() {
  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x47); // Starting with register 0x72
+  Wire.write(0x3F); // Starting with register 0x72
   Wire.endTransmission(false); // Keep active.
 
-  Wire.requestFrom(MPU_ADDR,2,true);
-  accel_z_h = Wire.read(); 
-  accel_z_l = Wire.read();
+  Wire.requestFrom(MPU_ADDR,6,true);
+  accel_xout_h = Wire.read();
+  accel_xout_l = Wire.read();
+  accel_yout_h = Wire.read();
+  accel_yout_l = Wire.read();
+  accel_zout_h = Wire.read(); 
+  accel_zout_l = Wire.read();
 
   //BIT SHIFT CODE
-  accel_z = accel_z_h << 8 | accel_z_l;
-
-  Serial.printf("Z acceleration: %i \n", accel_z);
-
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x43); // Starting with register 0x72
-  Wire.endTransmission(false); // Keep active.
-
-  Wire.requestFrom(MPU_ADDR,2,true);
-  accel_x_h = Wire.read();
-  accel_x_l = Wire.read();
-
+  accel_xout = accel_xout_h << 8 | accel_xout_l;
   //BIT SHIFT CODE
-  accel_x = accel_x_h << 8 | accel_x_l;
-
-  Serial.printf("X acceleration: %i \n", accel_x);
-
-  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x45); // Starting with register 0x72
-  Wire.endTransmission(false); // Keep active.
-
-  Wire.requestFrom(MPU_ADDR,2,true);
-  accel_y_h = Wire.read();
-  accel_y_l = Wire.read();
-
+  accel_yout = accel_yout_h << 8 | accel_yout_l;
   //BIT SHIFT CODE
-  accel_y = accel_y_h << 8 | accel_y_l;
+  accel_zout = accel_zout_h << 8 | accel_zout_l;
 
-  Serial.printf("Y acceleration: %i \n", accel_y);
+  Serial.printf("Z acceleration: %i \n", accel_zout);
+ 
+  Serial.printf("X acceleration: %i \n", accel_xout);
 
- gyroTotal = sqrt(pow(accel_x,2) +pow(accel_z,2) +pow(accel_y,2));
- Serial.printf("Gyro Total: %i\n", gyroTotal);
+  Serial.printf("Y acceleration: %i \n", accel_yout);
+
+ accelTotal = sqrt(pow(accel_xout,2) +pow(accel_zout,2) +pow(accel_yout,2));
+ Serial.printf("Accel Total: %i\n", accelTotal);
 }
 
 void alarm() {
