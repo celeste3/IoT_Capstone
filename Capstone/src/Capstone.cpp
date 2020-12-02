@@ -57,26 +57,24 @@ void setup() {
 }
 
 void loop() {
-  
   hallVal = digitalRead(hallPin);
   Serial.printf("hallPin %i\n", hallVal);
- 
+
   if(alarmState == TRUE) {
     alarm();
-
   }
   else {
     digitalWrite(ledPin,LOW);
   }
 
-  delay(2000);
+  delay(5000);
   getAccel();
 }
 
 void getAccel() {
  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3F); // Starting with register 0x72
-  Wire.endTransmission(false); // Keep active.
+  Wire.write(0x3F);  // Starting with register 0x3F
+  Wire.endTransmission(false);  // Keep active.
 
   Wire.requestFrom(MPU_ADDR,6,true);
   accel_xout_h = Wire.read();
@@ -88,19 +86,22 @@ void getAccel() {
 
   //BIT SHIFT CODE
   accel_xout = accel_xout_h << 8 | accel_xout_l;
+  accel_x_g = accel_xout / -16278.0;
+
   //BIT SHIFT CODE
   accel_yout = accel_yout_h << 8 | accel_yout_l;
+  accel_y_g = accel_yout / -16100.0;
+
   //BIT SHIFT CODE
   accel_zout = accel_zout_h << 8 | accel_zout_l;
+  accel_z_g = accel_zout / -17272.0; 
 
-  Serial.printf("Z acceleration: %i \n", accel_zout);
- 
   Serial.printf("X acceleration: %i \n", accel_xout);
-
   Serial.printf("Y acceleration: %i \n", accel_yout);
+  Serial.printf("Z acceleration: %i \n", accel_zout);
 
- accelTotal = sqrt(pow(accel_xout,2) +pow(accel_zout,2) +pow(accel_yout,2));
- Serial.printf("Accel Total: %i\n", accelTotal);
+  accelTotal = sqrt(pow(accel_xout,2) +pow(accel_zout,2) +pow(accel_yout,2));
+  Serial.printf("Accel Total: %i\n", accelTotal);
 }
 
 void alarm() {
