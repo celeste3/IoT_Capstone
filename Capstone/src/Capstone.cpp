@@ -24,7 +24,7 @@ byte accel_yout_h, accel_yout_l;
 byte accel_zout_h, accel_zout_l; //variables to store the individual btyes
 int16_t accel_xout, accel_yout, accel_zout;
 float accel_x_g, accel_y_g, accel_z_g;
-int accelTotal;
+float accelTotal;
 
 //Declared Variables for Hall sensor
 const int hallPin = D16;
@@ -73,7 +73,7 @@ void loop() {
 
 void getAccel() {
  Wire.beginTransmission(MPU_ADDR);
-  Wire.write(0x3F);  // Starting with register 0x3F
+  Wire.write(0x3B);  // Starting with register 0x3F
   Wire.endTransmission(false);  // Keep active.
 
   Wire.requestFrom(MPU_ADDR,6,true);
@@ -96,12 +96,16 @@ void getAccel() {
   accel_zout = accel_zout_h << 8 | accel_zout_l;
   accel_z_g = accel_zout / -17272.0; 
 
-  Serial.printf("X acceleration: %i \n", accel_xout);
-  Serial.printf("Y acceleration: %i \n", accel_yout);
-  Serial.printf("Z acceleration: %i \n", accel_zout);
+  // Serial.printf("X acceleration: %i \n", accel_xout);
+  // Serial.printf("Y acceleration: %i \n", accel_yout);
+  // Serial.printf("Z acceleration: %i \n", accel_zout);
 
-  accelTotal = sqrt(pow(accel_xout,2) +pow(accel_zout,2) +pow(accel_yout,2));
-  Serial.printf("Accel Total: %i\n", accelTotal);
+  Serial.printf("X acceleration: %f \n", accel_x_g);
+  Serial.printf("Y acceleration: %f \n", accel_y_g);
+  Serial.printf("Z acceleration: %f \n", accel_z_g);
+
+  accelTotal = sqrt(pow(accel_x_g,2) +pow(accel_z_g,2) +pow(accel_y_g,2));
+  Serial.printf("Accel Total: %f\n", accelTotal);
 }
 
 void alarm() {
