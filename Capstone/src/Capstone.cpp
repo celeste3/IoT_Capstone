@@ -13,9 +13,26 @@
 
 #include "credentials.h"
 
+#include <neopixel.h>
+
 #include <Adafruit_MQTT.h>
 
 #include <math.h>
+
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+void setup();
+void loop();
+void getAccel();
+void getHallState();
+void alarmIsOn();
+void alarmIsOff();
+void buttonClick();
+#line 17 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
+#define PIXEL_PIN D2
+#define PIXEL_COUNT 3 //Might add a fourth later
+#define PIXEL_TYPE WS2812B
+
+Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 /************ Global State (you don't need to change this!) ***   ***************/ 
 // TCPClient TheClient; 
@@ -31,13 +48,6 @@
 
 
 //Declared Variables for gyro
-void setup();
-void loop();
-void getAccel();
-void getHallState();
-void alarmIsOn();
-void alarmIsOff();
-#line 28 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
 byte accel_xout_h, accel_xout_l;
 byte accel_yout_h, accel_yout_l;
 byte accel_zout_h, accel_zout_l; //variables to store the individual btyes
@@ -49,12 +59,11 @@ const int threshold = 1.2;
 int setAlarm = 0;
 
 //Declared Variables for Hall sensor
+const int buttonPin = D15;
 const int hallPin = D16;
 bool hallVal;
 bool hallState;
-bool alarmState = true;
-
-const int ledPin = A5;
+bool alarmState = true; //True tempory hard wire for testing
 
 const int MPU_ADDR = 0X68;
 
@@ -63,13 +72,18 @@ SYSTEM_MODE(SEMI_AUTOMATIC); //Uncomment if using wifi
 void setup() {
   Serial.begin(9600);
   delay(1000);
+  pixel.begin();
+  pixel.show();
   
   // // Setup MQTT subscription for onoff feed.
   // //mqtt.subscribe(&TempF);
   // mqtt.subscribe(&buttonOnOf);
 
+  //pinMode(buttonPin);
   pinMode(ledPin, OUTPUT);
   pinMode(hallPin, INPUT);
+
+  attachInterrupt(buttonPin, buttonClick, RISING);
 
   //Begin 12C communications
   Wire.begin();
@@ -84,7 +98,7 @@ void setup() {
   //End transmission and close connection
   Wire.endTransmission(true);
 
-}
+} 
 
 void loop() {
     // MQTT_connect();
@@ -92,7 +106,7 @@ void loop() {
     getHallState();
 
   if(alarmState) {
-    hallVal = 0; //This is temp
+    hallVal = 0; //This is temporary
     Serial.printf("hallVal %i, accellTotal %f \n", hallVal, accelTotal);
    if(accelTotal > threshold || hallVal == true) {
     alarmIsOn();
@@ -159,4 +173,8 @@ void alarmIsOn() {
 void alarmIsOff() {
  digitalWrite(ledPin,LOW);
  delay(500);
+}
+
+void buttonClick() {
+  alarmState = !alarmState;
 }
