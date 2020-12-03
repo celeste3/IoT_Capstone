@@ -11,6 +11,13 @@
 
 #include <Adafruit_MQTT.h>
 
+#include "Adafruit_MQTT/Adafruit_MQTT.h"
+#include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h"
+#include "Adafruit_MQTT/Adafruit_MQTT.h"
+
+#include <HX711.h>
+HX711 myScale(D6 ,D5);
+
 #include <math.h>
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
@@ -20,20 +27,25 @@
 
 Adafruit_NeoPixel pixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
-/************ Global State (you don't need to change this!) ***   ***************/ 
+/************ Global State (you don't need to change this!) ******************/ 
 // TCPClient TheClient; 
 
-// Setup the MQTT client class by passing in the WiFi client and MQTT server and login details. 
+// Setup the MQTT client class by passing in the WiFi client, MQTT server and login details. 
 // Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_KEY); 
 
 /****************************** Feeds ***************************************/ 
 // Setup Feeds to publish or subscribe 
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname> 
-// Adafruit_MQTT_Subscribe buttonOnOf = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/buttonOnOf"); 
-// Adafruit_MQTT_Publish randomPub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/randomPub");
+// Adafruit_MQTT_Subscribe buttonOnOf = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/capstone"); 
+// Adafruit_MQTT_Publish randomPub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/alarm");
 
+/****Delcare Variables for scale*****/
+const int cal_factor= -1050;
+const int samples=1;
+float weight, rawData, cailbration;
+int offset;
 
-//Declared Variables for gyro
+/***Declared Variables for gyro***/
 byte accel_xout_h, accel_xout_l;
 byte accel_yout_h, accel_yout_l;
 byte accel_zout_h, accel_zout_l; //variables to store the individual btyes
@@ -44,7 +56,7 @@ float accelTotal;
 const float threshold = 1.0;
 int setAlarm = 0;
 
-//Declared Variables for Hall sensor and button
+/***Declared Variables for Hall sensor and button***/
 const int buttonPin = D15;
 const int hallPin = D16;
 int buttonVal;
@@ -58,7 +70,10 @@ SYSTEM_MODE(SEMI_AUTOMATIC); //Uncomment if using wifi
 
 void setup() {
   Serial.begin(9600);
+  // myScale.set_scale();
   delay(1000);
+  // myScale.tare(); // set the tares weight (or zero)
+  // myScale.set_scale(cal_factor); //adjust calibration
   pixel.begin();
   pixel.show();
   
@@ -88,10 +103,20 @@ void setup() {
 
 void loop() {
     // MQTT_connect();
+    //MQTTping();
     getAccel();
     getHallState();
     babyInBack();
 
+    //Using data from loadcell
+    //weight = myScale.get_units(samples); // return weight in units set by set_scale ();
+
+    // Other useful hx711 methods
+    // rawData = myScale.get_value(samples); // returns raw loadcell reading minus offset
+    // offset = myScale.get_offset(); // returns the offset set by tare ();
+    // cailbration = myScale.get_offset(); // return the cal_factor used by set_scale ();
+    // Serial.printf("Weight: %f, rawData: %f, calibration: %f, offset %i\n", weight, rawData, cailbration, offset);
+   
     // if((millis()-lastTime)>12000) {
     //   Serial.printf("Pinging MQTT \n");
     //   if(! mqtt.ping()) {
@@ -124,22 +149,31 @@ void loop() {
 }
 
 // void MQTT_connect() {
- // int8_t ret;
+//  int8_t ret;
 
-      // Stop if already connected.
-    // if (mqtt.connected()) {
-    //   return;
-    // }
+//       // Stop if already connected.
+//     if (mqtt.connected()) {
+//       return;
+//     }
 
-    // Serial.print("Connecting to MQTT... ");
+//     Serial.print("Connecting to MQTT... ");
 
-    // while ((ret = mqtt.connect()) !=0) { // connect will return 0 for connected
-    //     Serial.println(mqtt.connectErrorString(ret));
-    //     Serial.println("Retrying MQTT connection in 5 seconds...");
-    //     mqtt.disconnect();
-    //     delay(5000); // wait 5 seconds
-    // }
-    // Serial.println("MQTT Connected!"); 
+//     while ((ret = mqtt.connect()) !=0) { // connect will return 0 for connected
+//         Serial.println(mqtt.connectErrorString(ret));
+//         Serial.println("Retrying MQTT connection in 5 seconds...");
+//         mqtt.disconnect();
+//         delay(5000); // wait 5 seconds
+//     }
+//     Serial.println("MQTT Connected!"); 
+// }
+
+// void MQTTping() {
+//   static unsigned int lastTime=0;
+//   if((millis()-lastTime)>12000) {
+//     Serial.printf("Pinging MQTT \n");
+//     mqtt.disconnect();
+//   }
+//   lastTime = millis();
 // }
 
 void getAccel() {
