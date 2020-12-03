@@ -18,7 +18,7 @@
 #define PIXEL_COUNT 3 //Might add a fourth later
 #define PIXEL_TYPE WS2812B
 
-Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+Adafruit_NeoPixel pixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 /************ Global State (you don't need to change this!) ***   ***************/ 
 // TCPClient TheClient; 
@@ -41,12 +41,13 @@ int16_t accel_xout, accel_yout, accel_zout;
 float accel_x_g, accel_y_g, accel_z_g;
 float accelTotal;
 
-const int threshold = 1.2;
+const float threshold = 1.0;
 int setAlarm = 0;
 
-//Declared Variables for Hall sensor
+//Declared Variables for Hall sensor and button
 const int buttonPin = D15;
 const int hallPin = D16;
+int buttonVal;
 bool hallVal;
 bool hallState;
 bool alarmState = true; //True tempory hard wire for testing
@@ -91,8 +92,23 @@ void loop() {
     getHallState();
     babyInBack();
 
+    // if((millis()-lastTime)>12000) {
+    //   Serial.printf("Pinging MQTT \n");
+    //   if(! mqtt.ping()) {
+    //     Serial.printf("Disconnecting \n");
+    //     mqtt.disconnect();
+    //   }
+    //   lastTime = millis();
+    // }
+
+    // Adafruit_MQTT_Subscribe *subscription;
+    // while ((subscription = mqtt.readSubscription(2000))) {
+    //   if (subscription == &buttonOnOff) {
+    //     buttonValue = atoi((char *)bu)
+    //   }
+    // }
+
   if(alarmState) {
-    hallVal = 0; //This is temporary
     Serial.printf("hallVal %i, accellTotal %f \n", hallVal, accelTotal);
    if(accelTotal > threshold || hallVal == true) {
     alarmIsOn();
@@ -104,11 +120,26 @@ void loop() {
   else {
      alarmIsOff();
   }
+  //delay(2000); // Might be a good idea to take out for demo
 }
 
 // void MQTT_connect() {
-      // int8 
-    
+ // int8_t ret;
+
+      // Stop if already connected.
+    // if (mqtt.connected()) {
+    //   return;
+    // }
+
+    // Serial.print("Connecting to MQTT... ");
+
+    // while ((ret = mqtt.connect()) !=0) { // connect will return 0 for connected
+    //     Serial.println(mqtt.connectErrorString(ret));
+    //     Serial.println("Retrying MQTT connection in 5 seconds...");
+    //     mqtt.disconnect();
+    //     delay(5000); // wait 5 seconds
+    // }
+    // Serial.println("MQTT Connected!"); 
 // }
 
 void getAccel() {
@@ -150,21 +181,23 @@ void getHallState() {
 
 void alarmIsOn() {
     Serial.printf("Alarm is on \n");
-    if (hallVal == 0) {
-      pixel.setPixelColor(255,255,0,0); // Yellow alarm neutral
-      pixel.setBrightness(100);
-      pixel.show
-    }
-    else {
-      pixel.setPixelColor(0,255,0,0): // Red alarm on
-      pixel.setBrightness(100);
+    if(accelTotal > threshold) {
+      // Serial.printf(" %i \n", accelTotal);
+      pixel.setPixelColor(0,255,0,0); // Red alarm on
+      pixel.setBrightness(25);
       pixel.show();
       delay(100);
       pixel.clear();
       pixel.show();
-      delay();
+      delay(100);
     }
-  }
+    else if (hallVal == 1) {
+      //Serial.printf("Alarm neutral \n");
+      pixel.setPixelColor(1,255,255,0); // Yellow alarm neutral
+      pixel.setBrightness(25);
+      pixel.show();
+    }
+   }
 
 void alarmIsOff() {
   pixel.clear();
