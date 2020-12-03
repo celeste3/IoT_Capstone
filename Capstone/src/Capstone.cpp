@@ -21,21 +21,21 @@
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h"
 #include "Adafruit_MQTT/Adafruit_MQTT.h"
 
-#include <HX711.h>
+// #include <HX711.h>
+// HX711 myScale(D6 ,D5);
+
+#include <math.h>
+
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
 void setup();
 void loop();
 void getAccel();
 void getHallState();
 void alarmIsOn();
+void alarmNotTrigger();
 void alarmIsOff();
 void buttonClick();
-void babyInBack();
-#line 19 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
-HX711 myScale(D6 ,D5);
-
-#include <math.h>
-
-// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#line 24 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
 #define PIXEL_PIN D2
 #define PIXEL_COUNT 3 //Might add a fourth later
 #define PIXEL_TYPE WS2812B
@@ -59,6 +59,7 @@ const int cal_factor= -1050;
 const int samples=1;
 float weight, rawData, cailbration;
 int offset;
+const int baby = 145;
 
 /***Declared Variables for gyro***/
 byte accel_xout_h, accel_xout_l;
@@ -68,7 +69,7 @@ int16_t accel_xout, accel_yout, accel_zout;
 float accel_x_g, accel_y_g, accel_z_g;
 float accelTotal;
 
-const float threshold = 1.0;
+const float threshold = 1.1;
 int setAlarm = 0;
 
 /***Declared Variables for Hall sensor and button***/
@@ -77,7 +78,7 @@ const int hallPin = D16;
 int buttonVal;
 bool hallVal;
 bool hallState;
-bool alarmState = true; //True tempory hard wire for testing
+bool alarmState;
 
 const int MPU_ADDR = 0X68;
 
@@ -96,7 +97,7 @@ void setup() {
   // //mqtt.subscribe(&TempF);
   // mqtt.subscribe(&buttonOnOf);
 
-  pinMode(buttonPin, INPUT);
+  pinMode(buttonPin, INPUT_PULLDOWN); //INPUT_PULLDOWN uses Argon resister
   pinMode(hallPin, INPUT);
 
   attachInterrupt(buttonPin, buttonClick, RISING);
@@ -121,7 +122,9 @@ void loop() {
     //MQTTping();
     getAccel();
     getHallState();
-    babyInBack();
+    // babyInBack();
+    alarmNotTrigger();
+
 
     //Using data from loadcell
     //weight = myScale.get_units(samples); // return weight in units set by set_scale ();
@@ -150,7 +153,7 @@ void loop() {
 
   if(alarmState) {
     Serial.printf("hallVal %i, accellTotal %f \n", hallVal, accelTotal);
-   if(accelTotal > threshold || hallVal == true) {
+   if(accelTotal > threshold || hallVal == 0) {
     alarmIsOn();
    }
    else {
@@ -222,6 +225,8 @@ void getAccel() {
 
   accelTotal = sqrt(pow(accel_x_g,2) +pow(accel_z_g,2) +pow(accel_y_g,2));
   Serial.printf("Accel Total: %f\n", accelTotal);
+
+  delay(500); //Not sure why, but lights are more stable with a delay
 }
 
 void getHallState() {
@@ -231,22 +236,38 @@ void getHallState() {
 void alarmIsOn() {
     Serial.printf("Alarm is on \n");
     if(accelTotal > threshold) {
-      // Serial.printf(" %i \n", accelTotal);
-      pixel.setPixelColor(0,255,0,0); // Red alarm on
-      pixel.setBrightness(25);
-      pixel.show();
-      delay(100);
-      pixel.clear();
-      pixel.show();
-      delay(100);
+      while(alarmState) { //Anytime you have curly braces endent code
+        Serial.printf("***AccelTotal: %i \n", accelTotal);
+        pixel.setPixelColor(0,255,0,0); // Red alarm on
+        pixel.setBrightness(25);
+        pixel.show();
+        delay(100);
+        pixel.setColor(0,0,0,0);
+        pixel.show();
+        delay(100);
+      }
     }
-    else if (hallVal == 1) {
+    else if (hallVal == 0) {
       //Serial.printf("Alarm neutral \n");
-      pixel.setPixelColor(1,255,255,0); // Yellow alarm neutral
-      pixel.setBrightness(25);
-      pixel.show();
+      while(alarmState) {
+          pixel.setPixelColor(1,255,255,0); // Yellow alarm neutral
+          pixel.setBrightness(25);
+          pixel.show();
+      }
     }
    }
+
+void alarmNotTrigger() {
+  if(alarmState == true) {
+    pixel.setPixelColor(2,0,255,255); // Cyan alarm is enabled
+    pixel.setBrightness(25);
+    pixel.show();
+    delay(100);
+    pixel.setPixelColor(2,0,0,0);
+    pixel.show();
+    delay(100);
+  }
+}
 
 void alarmIsOff() {
   pixel.clear();
@@ -257,6 +278,10 @@ void buttonClick() {
   alarmState = !alarmState;
 }
 
-void babyInBack() {
-  
-}
+// void babyInBack() {P
+//   if(weight > baby) {
+//    rainbow(20);
+//    pixel.show();
+//    pixel.clear();
+//   }
+// }
