@@ -15,6 +15,8 @@
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h"
 #include "Adafruit_MQTT/Adafruit_MQTT.h"
 
+#include <colors.h>
+
 #include <HX711.h>
 HX711 myScale(D6 ,D5);
 
@@ -22,7 +24,7 @@ HX711 myScale(D6 ,D5);
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_PIN D2
-#define PIXEL_COUNT 3 //Might add a fourth later
+#define PIXEL_COUNT 4 //Might add a fourth later
 #define PIXEL_TYPE WS2812B
 
 Adafruit_NeoPixel pixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
@@ -46,7 +48,7 @@ float weight, rawData, cailbration;
 int offset;
 const int baby = 145;
 
-/***Declared Variables for gyro***/
+/***Declared Variables for accel***/
 byte accel_xout_h, accel_xout_l;
 byte accel_yout_h, accel_yout_l;
 byte accel_zout_h, accel_zout_l; //variables to store the individual btyes
@@ -218,7 +220,7 @@ void getHallState() {
 }
 
 void alarmIsOn() {
-    Serial.printf("Alarm is on \n");
+  Serial.printf("Alarm is on \n");
     if(accelTotal > threshold) {
       while(alarmState) { //Anytime you have curly braces endent code
         Serial.printf("***AccelTotal: %i \n", accelTotal);
@@ -232,9 +234,9 @@ void alarmIsOn() {
       }
     }
     else if (hallVal == 0) {
-      //Serial.printf("Alarm neutral \n");
+      //Serial.printf("\n");
       while(alarmState) {
-          pixel.setPixelColor(1,255,255,0); // Yellow alarm neutral
+          pixel.setPixelColor(1,255,255,0); // Yellow alarm 
           pixel.setBrightness(25);
           pixel.show();
       }
@@ -262,10 +264,12 @@ void buttonClick() {
   alarmState = !alarmState;
 }
 
-// void babyInBack() {P
-//   if(weight > baby) {
-//    rainbow(20);
-//    pixel.show();
-//    pixel.clear();
-//   }
-// }
+void babyInBack() {
+  Serial.printf("Baby in the back %i \n", baby);
+    if(weight > baby) {
+       while(alarmState) { //Anytime you have curly braces endent code
+        rainbow;
+       pixel.show();
+    }
+  }
+}
