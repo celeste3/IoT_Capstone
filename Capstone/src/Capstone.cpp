@@ -21,12 +21,7 @@
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h"
 #include "Adafruit_MQTT/Adafruit_MQTT.h"
 
-// #include <HX711.h>
-// HX711 myScale(D6 ,D5);
-
-#include <math.h>
-
-// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#include <HX711.h>
 void setup();
 void loop();
 void getAccel();
@@ -35,7 +30,12 @@ void alarmIsOn();
 void alarmNotTrigger();
 void alarmIsOff();
 void buttonClick();
-#line 24 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
+#line 19 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
+HX711 myScale(D6 ,D5);
+
+#include <math.h>
+
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_PIN D2
 #define PIXEL_COUNT 3 //Might add a fourth later
 #define PIXEL_TYPE WS2812B
@@ -86,10 +86,10 @@ SYSTEM_MODE(SEMI_AUTOMATIC); //Uncomment if using wifi
 
 void setup() {
   Serial.begin(9600);
-  // myScale.set_scale();
+  myScale.set_scale();
   delay(1000);
-  // myScale.tare(); // set the tares weight (or zero)
-  // myScale.set_scale(cal_factor); //adjust calibration
+  myScale.tare(); // set the tares weight (or zero)
+  myScale.set_scale(cal_factor); //adjust calibration
   pixel.begin();
   pixel.show();
   
@@ -122,18 +122,17 @@ void loop() {
     //MQTTping();
     getAccel();
     getHallState();
-    // babyInBack();
+    babyInBack();
     alarmNotTrigger();
 
-
     //Using data from loadcell
-    //weight = myScale.get_units(samples); // return weight in units set by set_scale ();
+    weight = myScale.get_units(samples); // return weight in units set by set_scale ();
 
     // Other useful hx711 methods
-    // rawData = myScale.get_value(samples); // returns raw loadcell reading minus offset
-    // offset = myScale.get_offset(); // returns the offset set by tare ();
-    // cailbration = myScale.get_offset(); // return the cal_factor used by set_scale ();
-    // Serial.printf("Weight: %f, rawData: %f, calibration: %f, offset %i\n", weight, rawData, cailbration, offset);
+    rawData = myScale.get_value(samples); // returns raw loadcell reading minus offset
+    offset = myScale.get_offset(); // returns the offset set by tare ();
+    cailbration = myScale.get_offset(); // return the cal_factor used by set_scale ();
+    Serial.printf("Weight: %f, rawData: %f, calibration: %f, offset %i\n", weight, rawData, cailbration, offset);
    
     // if((millis()-lastTime)>12000) {
     //   Serial.printf("Pinging MQTT \n");
