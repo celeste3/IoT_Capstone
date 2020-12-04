@@ -29,12 +29,12 @@ void loop();
 void getAccel();
 void getHallState();
 void alarmIsOn();
-void alarmNotTrigger();
+void alarmEnabled();
 void alarmIsOff();
 void buttonClick();
 void babyInBack();
 #line 21 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
-HX711 myScale(D6 ,D5);
+HX711 myScale(D6,D5);
 
 #include <math.h>
 
@@ -63,6 +63,7 @@ const int samples=1;
 float weight, rawData, cailbration;
 int offset;
 const int baby = 145;
+int i;
 
 /***Declared Variables for accel***/
 byte accel_xout_h, accel_xout_l;
@@ -74,6 +75,8 @@ float accelTotal;
 
 const float threshold = 1.1;
 int setAlarm = 0;
+
+int c;
 
 /***Declared Variables for Hall sensor and button***/
 const int buttonPin = D15;
@@ -125,18 +128,15 @@ void loop() {
     //MQTTping();
     getAccel();
     getHallState();
-    babyInBack();
-    alarmNotTrigger();
+    alarmEnabled(); //Use to be named alarmNotTrigger 
 
     //Using data from loadcell
     weight = myScale.get_units(samples); // return weight in units set by set_scale ();
 
-    // Other useful hx711 methods
-    rawData = myScale.get_value(samples); // returns raw loadcell reading minus offset
-    offset = myScale.get_offset(); // returns the offset set by tare ();
-    cailbration = myScale.get_offset(); // return the cal_factor used by set_scale ();
-    Serial.printf("Weight: %f, rawData: %f, calibration: %f, offset %i\n", weight, rawData, cailbration, offset);
+    Serial.printf("Weight: %f \n", weight);
    
+    babyInBack();
+
     // if((millis()-lastTime)>12000) {
     //   Serial.printf("Pinging MQTT \n");
     //   if(! mqtt.ping()) {
@@ -259,7 +259,7 @@ void alarmIsOn() {
     }
    }
 
-void alarmNotTrigger() {
+void alarmEnabled() {
   if(alarmState == true) {
     pixel.setPixelColor(2,0,255,255); // Cyan alarm is enabled
     pixel.setBrightness(25);
@@ -281,11 +281,34 @@ void buttonClick() {
 }
 
 void babyInBack() {
-  Serial.printf("Baby in the back %i \n", baby);
-    if(weight > baby) {
-       while(alarmState) { //Anytime you have curly braces endent code
-        rainbow;
-       pixel.show();
+  Serial.printf("Baby in back %i \n", weight);
+  if(weight > baby) {
+     for(c=0; c <6; c++){
+      for(i=0; i < 4; i++) {
+        pixel.setPixelColor(i, rainbow[c]);
+        pixel.setBrightness(25);
+        pixel.show();  
+      }
+      delay(500);
     }
+   }
   }
-}
+
+
+//   Serial.printf("Baby in the back %i \n", baby);
+//     if(weight > baby) {
+//        while(alarmState) { //Anytime you have curly braces endent code
+//         rainbow;
+//         pixel.show();
+//     }
+//   }
+// }
+
+
+// Code to pixel.fill for Argon
+// Void loop() {
+//     for(i=0,i<4,i++) {
+//       pixel.setPixelColor(i ,rainbow);
+//     }
+//       pixel.show();
+//     }
