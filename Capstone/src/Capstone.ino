@@ -30,16 +30,18 @@ HX711 myScale(D6,D5);
 Adafruit_NeoPixel pixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 /************ Global State (you don't need to change this!) ******************/ 
-// TCPClient TheClient; 
+TCPClient TheClient; 
 
 // Setup the MQTT client class by passing in the WiFi client, MQTT server and login details. 
-// Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_KEY); 
+Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_KEY); 
 
 /****************************** Feeds ***************************************/ 
 // Setup Feeds to publish or subscribe 
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname> 
-// Adafruit_MQTT_Subscribe buttonOnOf = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/capstone"); 
-// Adafruit_MQTT_Publish randomPub = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/alarm");
+//Adafruit_MQTT_Subscribe Capstone = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/capstone"); 
+Adafruit_MQTT_Publish alarmData = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/alarmData");
+
+unsigned long lastTime;
 
 /****Delcare Variables for scale*****/
 const int cal_factor= -1050;
@@ -48,6 +50,7 @@ float weight, rawData, cailbration;
 int offset;
 const int baby = 145;
 int i;
+int c;
 
 /***Declared Variables for accel***/
 byte accel_xout_h, accel_xout_l;
@@ -60,8 +63,6 @@ float accelTotal;
 const float threshold = 1.1;
 int setAlarm = 0;
 
-int c;
-
 /***Declared Variables for Hall sensor and button***/
 const int buttonPin = D15;
 const int hallPin = D16;
@@ -72,7 +73,7 @@ bool alarmState;
 
 const int MPU_ADDR = 0X68;
 
-SYSTEM_MODE(SEMI_AUTOMATIC); //Uncomment if using wifi
+// SYSTEM_MODE(SEMI_AUTOMATIC); //Uncomment if using wifi
 
 void setup() {
   Serial.begin(9600);
@@ -84,8 +85,7 @@ void setup() {
   pixel.show();
   
   // // Setup MQTT subscription for onoff feed.
-  // //mqtt.subscribe(&TempF);
-  // mqtt.subscribe(&buttonOnOf);
+  // mqtt.subscribe(&NAMETHIS);
 
   pinMode(buttonPin, INPUT_PULLDOWN); //INPUT_PULLDOWN uses Argon resister
   pinMode(hallPin, INPUT);
@@ -104,12 +104,11 @@ void setup() {
 
   //End transmission and close connection
   Wire.endTransmission(true);
-
 } 
 
 void loop() {
-    // MQTT_connect();
-    //MQTTping();
+    MQTT_connect();
+    MQTTping();
     getAccel();
     getHallState();
     alarmEnabled(); //Use to be named alarmNotTrigger 
@@ -120,22 +119,6 @@ void loop() {
     Serial.printf("Weight: %f \n", weight);
    
     babyInBack();
-
-    // if((millis()-lastTime)>12000) {
-    //   Serial.printf("Pinging MQTT \n");
-    //   if(! mqtt.ping()) {
-    //     Serial.printf("Disconnecting \n");
-    //     mqtt.disconnect();
-    //   }
-    //   lastTime = millis();
-    // }
-
-    // Adafruit_MQTT_Subscribe *subscription;
-    // while ((subscription = mqtt.readSubscription(2000))) {
-    //   if (subscription == &buttonOnOff) {
-    //     buttonValue = atoi((char *)bu)
-    //   }
-    // }
 
   if(alarmState) {
     Serial.printf("hallVal %i, accellTotal %f \n", hallVal, accelTotal);
@@ -152,33 +135,36 @@ void loop() {
   //delay(2000); // Might be a good idea to take out for demo
 }
 
-// void MQTT_connect() {
-//  int8_t ret;
+void MQTT_connect() {
+ int8_t ret;
 
-//       // Stop if already connected.
-//     if (mqtt.connected()) {
-//       return;
-//     }
+    // Stop if already connected.
+    if (mqtt.connected()) {
+      return;
+    }
 
-//     Serial.print("Connecting to MQTT... ");
+    Serial.print("Connecting to MQTT... ");
 
-//     while ((ret = mqtt.connect()) !=0) { // connect will return 0 for connected
-//         Serial.println(mqtt.connectErrorString(ret));
-//         Serial.println("Retrying MQTT connection in 5 seconds...");
-//         mqtt.disconnect();
-//         delay(5000); // wait 5 seconds
-//     }
-//     Serial.println("MQTT Connected!"); 
-// }
+    while ((ret = mqtt.connect()) !=0) { // connect will return 0 for connected
+      Serial.println(mqtt.connectErrorString(ret));
+      Serial.println("Retrying MQTT connection in 5 seconds...");
+      mqtt.disconnect();
+      delay(5000); // wait 5 seconds
+    }
+    Serial.println("MQTT Connected!"); 
+}
 
-// void MQTTping() {
-//   static unsigned int lastTime=0;
-//   if((millis()-lastTime)>12000) {
-//     Serial.printf("Pinging MQTT \n");
-//     mqtt.disconnect();
-//   }
-//   lastTime = millis();
-// }
+void MQTTping() {
+  static unsigned int lastTime=0;
+  if((millis()-lastTime)>12000) {
+    Serial.printf("Pinging MQTT \n");
+    if(! mqtt.ping()) {
+     Serial.printf("Pinging MQTT \n");
+     mqtt.disconnect();
+  }
+  lastTime = millis();
+ }
+}
 
 void getAccel() {
  Wire.beginTransmission(MPU_ADDR);
@@ -222,6 +208,7 @@ void getHallState() {
 void alarmIsOn() {
   Serial.printf("Alarm is on \n");
     if(accelTotal > threshold) {
+      publish();
       while(alarmState) { //Anytime you have curly braces endent code
         Serial.printf("***AccelTotal: %i \n", accelTotal);
         pixel.setPixelColor(0,255,0,0); // Red alarm on
@@ -278,21 +265,11 @@ void babyInBack() {
    }
   }
 
-
-//   Serial.printf("Baby in the back %i \n", baby);
-//     if(weight > baby) {
-//        while(alarmState) { //Anytime you have curly braces endent code
-//         rainbow;
-//         pixel.show();
-//     }
-//   }
-// }
-
-
-// Code to pixel.fill for Argon
-// Void loop() {
-//     for(i=0,i<4,i++) {
-//       pixel.setPixelColor(i ,rainbow);
-//     }
-//       pixel.show();
-//     }
+  void publish() {
+    if((millis()-lastTime > 15000)) {
+      if(mqtt.Update()) {
+       alarmData.publish(alarmState);
+      }
+    lastTime = millis();
+    }
+  }
