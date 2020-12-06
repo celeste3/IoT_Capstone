@@ -6,7 +6,7 @@
 #line 1 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
 /*
  * Project Capstone
- * Description: Auto theft detecton device
+ * Description: Auto theft detection/baby left in backseat device
  * Author: Celeste Corazon
  * Date: November 30, 2020
  */
@@ -43,14 +43,14 @@ HX711 myScale(D6,D5);
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_PIN D2
-#define PIXEL_COUNT 4 //Might add a fourth later
+#define PIXEL_COUNT 4 
 #define PIXEL_TYPE WS2812B
 
 Adafruit_NeoPixel pixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 /************ Global State (you don't need to change this!) ******************/ 
 TCPClient TheClient; 
-
+ 
 // Setup the MQTT client class by passing in the WiFi client, MQTT server and login details. 
 Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_KEY); 
 
@@ -67,7 +67,7 @@ const int cal_factor= -1050;
 const int samples=1;
 float weight, rawData, cailbration;
 int offset;
-const int baby = 145;
+const int baby = 145; //Theshold for back seat weight
 int i;
 int c;
 
@@ -279,7 +279,7 @@ void babyInBack() {
         pixel.setBrightness(25);
         pixel.show();  
       }
-      delay(500);
+      delay(200);
     }
    }
   }
