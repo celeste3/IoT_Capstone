@@ -39,7 +39,8 @@ Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_K
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname> 
 //Adafruit_MQTT_Subscribe Capstone = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/capstone"); 
 Adafruit_MQTT_Publish alarmData = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/alarmData");
-Adafruit_MQTT_Publish weightData = Adafruit_MQTT_Publish(&mqtt,AIO_USERNAME "/feeds/weightData");
+Adafruit_MQTT_Publish backseatWeight = Adafruit_MQTT_Publish(&mqtt,AIO_USERNAME "/feeds/backseatWeight");
+Adafruit_MQTT_Publish doorOpened = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/doorOpened");
 
 unsigned long lastTime;
 
@@ -47,6 +48,7 @@ unsigned long lastTime;
 const int cal_factor= -1050;
 const int samples=1;
 float weight, rawData, cailbration;
+bool backseatState;
 int offset;
 const int baby = 145; //Theshold for back seat weight
 int i;
@@ -59,6 +61,7 @@ byte accel_zout_h, accel_zout_l; //variables to store the individual btyes
 int16_t accel_xout, accel_yout, accel_zout;
 float accel_x_g, accel_y_g, accel_z_g;
 float accelTotal;
+bool accelState;
 
 const float threshold = 1.1;
 int setAlarm = 0;
@@ -112,16 +115,7 @@ void loop() {
     getAccel();
     getHallState();
     alarmEnabled(); //Use to be named alarmNotTrigger 
-
-    //***Publish on Adafruit***//
-    if((millis()-lastTime > 15000)) {
-      if(mqtt.Update()) {
-        weightData.publish(weight);
-        Serial.printf("Publish Weight %f \n", weight);
-        alarmData.publish(accelTotal);
-        Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
-      }
-    }
+    publish();
 
     //Using data from loadcell
     weight = myScale.get_units(samples); // return weight in units set by set_scale ();
@@ -290,4 +284,36 @@ void babyInBack() {
       }
     lastTime = millis();
     }
-  }
+
+    //***Publish on Adafruit***//
+    if((millis()-lastTime > 30000)) {
+      if(mqtt.Update()) {
+	if(backseatState == TRUE) {
+         backseatWeight.publish(weight);
+         Serial.printf("Publish Weight %f \n", weight);
+}
+        if(accelState == TRUE) {
+         alarmData.publish(accelTotal);
+         Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
+}
+	if(hallState == TRUE) {
+        doorOpened.publish(hallState);
+        Serial.printf("Pub hallState \n", hallState);
+        }
+      }
+    }
+
+
+    //  //***Publish on Adafruit***//
+    // if((millis()-lastTime > 30000)) {
+    //   if(mqtt.Update()) {
+    //     backseatWeight.publish(weight);
+    //     Serial.printf("Publish Weight %f \n", weight);
+    //     alarmData.publish(accelTotal);
+    //     Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
+    //     // doorOpened.publish(hallState);
+    //     // Serial.printf("Pub hallState ");
+    //   }
+    // }
+
+  } //void publish end
