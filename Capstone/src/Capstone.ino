@@ -17,7 +17,7 @@
 
 #include <colors.h>
 
-#include <HX711.h>
+#include <HX711.h> //Scale library
 HX711 myScale(D6,D5);
 
 #include <math.h>
@@ -152,7 +152,16 @@ void MQTT_connect() {
       delay(5000); // wait 5 seconds
     }
     Serial.println("MQTT Connected!"); 
-}
+
+    while ((ret = mqtt.connect()) != 0) { //connect will return 0 for connected
+      Serial.println(mqtt.connectErrorString(ret));
+      Serial.println("Retrying MQTT connection in 5 secounds....");
+      mqtt.disconnect();
+      delay(5000); //wait 5 seconds
+      }
+      Serial.println("MQTT Connected!");
+    }
+
 
 void MQTTping() {
   static unsigned int lastTime=0;
