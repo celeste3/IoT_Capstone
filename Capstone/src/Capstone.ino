@@ -40,6 +40,7 @@ Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_K
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname> 
 //Adafruit_MQTT_Subscribe Capstone = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/capstone"); 
 Adafruit_MQTT_Publish alarmData = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/alarmData");
+Adafruit_MQTT_Publish weightData = Adafruit_MQTT_Publish(&mqtt,AIO_USERNAME "/feeds/weightData");
 
 unsigned long lastTime;
 
@@ -113,6 +114,16 @@ void loop() {
     getHallState();
     alarmEnabled(); //Use to be named alarmNotTrigger 
 
+    //***Publish on Adafruit***//
+    if((millis()-lastTime > 15000)) {
+      if(mqtt.Update()) {
+        weightData.publish(weightData);
+        Serial.printf("Publish Weight %f \n", weightData);
+        alarmData.publish(alarmData);
+        Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
+      }
+    }
+
     //Using data from loadcell
     weight = myScale.get_units(samples); // return weight in units set by set_scale ();
 
@@ -161,7 +172,6 @@ void MQTT_connect() {
       }
       Serial.println("MQTT Connected!");
     }
-
 
 void MQTTping() {
   static unsigned int lastTime=0;
