@@ -292,7 +292,7 @@ void babyInBack() {
          backseatWeight.publish(weight);
          Serial.printf("Publish Weight %f \n", weight);
 }
-        if(accelState == TRUE) {
+        if(accelTotal > threshold) {
          alarmData.publish(accelTotal);
          Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
 }
@@ -302,18 +302,4 @@ void babyInBack() {
         }
       }
     }
-
-
-    //  //***Publish on Adafruit***//
-    // if((millis()-lastTime > 30000)) {
-    //   if(mqtt.Update()) {
-    //     backseatWeight.publish(weight);
-    //     Serial.printf("Publish Weight %f \n", weight);
-    //     alarmData.publish(accelTotal);
-    //     Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
-    //     // doorOpened.publish(hallState);
-    //     // Serial.printf("Pub hallState ");
-    //   }
-    // }
-
   } //void publish end
