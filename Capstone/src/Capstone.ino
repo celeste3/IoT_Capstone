@@ -13,7 +13,6 @@
 
 #include "Adafruit_MQTT/Adafruit_MQTT.h"
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h"
-#include "Adafruit_MQTT/Adafruit_MQTT.h"
 
 #include <colors.h>
 
@@ -117,9 +116,9 @@ void loop() {
     //***Publish on Adafruit***//
     if((millis()-lastTime > 15000)) {
       if(mqtt.Update()) {
-        weightData.publish(weightData);
-        Serial.printf("Publish Weight %f \n", weightData);
-        alarmData.publish(alarmData);
+        weightData.publish(weight);
+        Serial.printf("Publish Weight %f \n", weight);
+        alarmData.publish(accelTotal);
         Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
       }
     }

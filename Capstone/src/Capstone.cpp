@@ -19,7 +19,6 @@
 
 #include "Adafruit_MQTT/Adafruit_MQTT.h"
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h"
-#include "Adafruit_MQTT/Adafruit_MQTT.h"
 
 #include <colors.h>
 
@@ -36,7 +35,7 @@ void alarmIsOff();
 void buttonClick();
 void babyInBack();
 void publish();
-#line 21 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
+#line 20 "c:/Users/Celeste/Documents/IoT/IoT_Capstone/Capstone/src/Capstone.ino"
 HX711 myScale(D6,D5);
 
 #include <math.h>
@@ -136,9 +135,9 @@ void loop() {
     //***Publish on Adafruit***//
     if((millis()-lastTime > 15000)) {
       if(mqtt.Update()) {
-        weightData.publish(weightData);
-        Serial.printf("Publish Weight %f \n", weightData);
-        alarmData.publish(alarmData);
+        weightData.publish(weight);
+        Serial.printf("Publish Weight %f \n", weight);
+        alarmData.publish(accelTotal);
         Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
       }
     }
