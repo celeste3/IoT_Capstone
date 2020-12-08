@@ -281,15 +281,14 @@ void babyInBack() {
     //***Publish on Adafruit***//
     if((millis()-lastTime > 60000)) {
       if(mqtt.Update()) {
-        alarmData.publish(alarmState); //***
 	if(backseatState == TRUE) {
          backseatWeight.publish(weight);
          Serial.printf("Publish Weight %f \n", weight);
-}
+  }
         if(accelTotal > threshold) {
          alarmData.publish(accelTotal);
          Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
-}
+        }
 	if(hallState == TRUE) {
         doorOpened.publish(hallState);
         Serial.printf("Pub hallState \n", hallState);
