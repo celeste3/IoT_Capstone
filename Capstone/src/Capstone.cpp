@@ -62,6 +62,7 @@ Adafruit_MQTT_Publish backseatWeight = Adafruit_MQTT_Publish(&mqtt,AIO_USERNAME 
 Adafruit_MQTT_Publish doorOpened = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/doorOpened");
 
 unsigned long lastTime;
+unsigned long lastPublish;
 
 /****Delcare Variables for scale*****/
 const int cal_factor= -1050;
@@ -298,20 +299,22 @@ void babyInBack() {
 
   void publish() {
     //***Publish on Adafruit***//
-    if((millis()-lastTime > 60000)) {
+    if((millis()-lastPublish > 15000)) {
       if(mqtt.Update()) {
-	if(backseatState == TRUE) {
-         backseatWeight.publish(weight);
-         Serial.printf("Publish Weight %f \n", weight);
-  }
+        if(backseatState == TRUE) {
+              backseatWeight.publish(weight);
+              Serial.printf("Publish Weight %f \n", weight);
+        }
         if(accelTotal > threshold) {
          alarmData.publish(accelTotal);
          Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
         }
-	if(hallState == TRUE) {
-        doorOpened.publish(hallState);
-        Serial.printf("Pub hallState \n", hallState);
+          if(hallState == TRUE) {
+                doorOpened.publish(hallState);
+                Serial.printf("Pub hallState \n", hallState);
         }
-      }
+       
+       }
+    lastPublish = millis();
     }
   } //void publish end
