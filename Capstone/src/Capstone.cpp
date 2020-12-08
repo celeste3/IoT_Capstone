@@ -297,16 +297,10 @@ void babyInBack() {
   }
 
   void publish() {
-    if((millis()-lastTime > 15000)) {
-      if(mqtt.Update()) {
-       alarmData.publish(alarmState);
-      }
-    lastTime = millis();
-    }
-
     //***Publish on Adafruit***//
-    if((millis()-lastTime > 30000)) {
+    if((millis()-lastTime > 60000)) {
       if(mqtt.Update()) {
+        alarmData.publish(alarmState); //***
 	if(backseatState == TRUE) {
          backseatWeight.publish(weight);
          Serial.printf("Publish Weight %f \n", weight);
