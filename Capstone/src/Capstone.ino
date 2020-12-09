@@ -49,7 +49,6 @@ unsigned long lastPublish;
 const int cal_factor= -1050;
 const int samples=1;
 float weight, rawData, cailbration;
-bool backseatState;
 int offset;
 const int baby = 145; //Theshold for back seat weight
 int i;
@@ -282,7 +281,7 @@ void babyInBack() {
     //***Publish on Adafruit***//
     if((millis()-lastPublish > 15000)) {
       if(mqtt.Update()) {
-        if(weight > baby) {
+        if(weight > baby) { //baby is weight threshold
               backseatWeight.publish(weight);
               Serial.printf("Publish Weight %f \n", weight);
         }
@@ -290,11 +289,10 @@ void babyInBack() {
          alarmData.publish(accelTotal);
          Serial.printf("Publish Alarm Accel Total %f \n", accelTotal);
         }
-          if(hallState == TRUE) {
-                doorOpened.publish(hallState);
-                Serial.printf("Pub hallState \n", hallState);
+        if(hallState > 0) {
+          doorOpened.publish(hallState);
+          Serial.printf("Pub hallState \n", hallState);
         }
-       
        }
     lastPublish = millis();
     }
